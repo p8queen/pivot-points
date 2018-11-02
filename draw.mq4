@@ -15,11 +15,13 @@
 int OnInit()
   {
 //---
-   datetime NY_open = D'15:00'; 
-   datetime NY_close = NY_open + 9*60*60; 
+   Print("/////////////************** INIT ***********///////////");
+   datetime NY_close = D'23:00'; 
+   datetime NY_open = NY_close - 9*60*60; 
     
   int candle_open = iBarShift(Symbol(),PERIOD_H1,NY_open);
   int candle_close = iBarShift(Symbol(),PERIOD_H1,NY_close);
+  
   
   double valHigh=0;
   double valLow = 0;
@@ -40,30 +42,46 @@ int OnInit()
          DoubleToString(valClose,Digits) +"\n pivot: "+ DoubleToString(pivot,Digits) ;
          
    int z =0;
-   string upperLine;
-   //fix while with this: NY_close < Time[Bars-1]
-   while(z<Bars){      
+   string upperLine, pivotLine;
+  
+   datetime time_first_candle = iTime(Symbol(),PERIOD_H1,250);
+   Print("time first candle: ",TimeToStr(time_first_candle));
+   Print("NY_open: ",TimeToStr(NY_open));
+   while(NY_open>=time_first_candle){      
+         Sleep(500);
          upperLine = "upperLine-" + IntegerToString(z);
+         pivotLine = "pivotLine-" + IntegerToString(z);
+         
          setUpperLine(upperLine, valHigh, NY_close);
+         setPivotLine(pivotLine,pivot,NY_close);
          PrintFormat("uppeLine: %s. valhigh: %.4f candle_close: '%d'",upperLine,valHigh,candle_close);
          
-                           
-         NY_close -= 24*60*60 ;
-         Print(TimeToStr(NY_close));
-         candle_close += 24;
+         
+         if(TimeDayOfWeek(NY_close)==1){
+            //Monday has check pivot of friday
+            NY_close -= 72*60*60 ;
+            candle_close += 72;
+            }else{                  
+            NY_close -= 24*60*60 ;
+            candle_close += 24;}
+         NY_open = NY_close - 9*60*60;
+         Print(TimeToStr(NY_close),", NY_close, open, ", TimeToStr(NY_open));
+         
+         
          val_index=iHighest(Symbol(),PERIOD_H1,MODE_HIGH,9,candle_close);
          if(val_index!=-1) valHigh=iHigh(Symbol(),PERIOD_H1,val_index);
-         z=candle_close;
+        
+         valLow_index=iLowest(Symbol(),PERIOD_H1,MODE_HIGH,9,candle_close);
+         if(valLow_index!=-1) valLow=iLow(Symbol(),PERIOD_H1,valLow_index);
+         valClose = iClose(Symbol(),PERIOD_H1,candle_close);
+   
+         pivot = (valHigh+valLow+valClose)/3;
+        
+         z++;
          }
 
 
-  // string label = "pivotLine";
-  //ObjectDelete(0,label);
-  //ObjectCreate(0,label, OBJ_TREND, 0, NY_open, pivot, NY_close, pivot);
-  //ObjectSetInteger(0,label,OBJPROP_RAY_RIGHT,false);
-  //ObjectSet(label,OBJPROP_STYLE, STYLE_DASHDOT);
-  //ObjectSet(label,OBJPROP_COLOR,clrYellow);
-  //ObjectSet(label,OBJPROP_WIDTH,1);              
+              
 
    setLabel(output);
 //---
@@ -87,9 +105,10 @@ void OnTick()
   }
 //+------------------------------------------------------------------+
 
+
 void setUpperLine(string name, double dblValHigh, datetime datetime_candle_close){
-      PrintFormat("//////////////////-------------/////////////////");
-      PrintFormat("name: %s. dblvalhigh: %.4f num_candle_close: '%s'",name,dblValHigh,datetime_candle_close);
+      //PrintFormat("//////////////////-------------/////////////////");
+      //PrintFormat("name: %s. dblvalhigh: %.4f num_candle_close: '%s'",name,dblValHigh,datetime_candle_close);
       
      ObjectDelete(0,name);
      ObjectCreate(0,name, OBJ_TREND, 0, datetime_candle_close-9*60*60, dblValHigh+100*Point, datetime_candle_close, dblValHigh+100*Point);
@@ -99,6 +118,20 @@ void setUpperLine(string name, double dblValHigh, datetime datetime_candle_close
      ObjectSet(name,OBJPROP_WIDTH,1);
    }
    
+
+void setPivotLine(string name, double dblPivot, datetime datetime_candle_close){
+      //PrintFormat("//////////////////-------------/////////////////");
+      //PrintFormat("name: %s. dblvalhigh: %.4f num_candle_close: '%s'",name,dblPivot,datetime_candle_close);
+      
+     ObjectDelete(0,name);
+     ObjectCreate(0,name, OBJ_TREND, 0, datetime_candle_close-9*60*60, dblPivot, datetime_candle_close, dblPivot);
+     ObjectSetInteger(0,name,OBJPROP_RAY_RIGHT,false);
+     ObjectSet(name,OBJPROP_STYLE, STYLE_DASHDOT);
+     ObjectSet(name,OBJPROP_COLOR,clrYellow);
+     ObjectSet(name,OBJPROP_WIDTH,1);
+   }
+
+
    void setLabel(string strText){
    
       string to_split=strText;   // A string to split into substrings
