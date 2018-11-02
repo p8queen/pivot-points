@@ -41,6 +41,7 @@ int OnInit()
          
    int z =0;
    string upperLine;
+   //fix while with this: NY_close < Time[Bars-1]
    while(z<Bars){      
          upperLine = "upperLine-" + IntegerToString(z);
          setUpperLine(upperLine, valHigh, NY_close);
