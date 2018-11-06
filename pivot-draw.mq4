@@ -22,6 +22,7 @@ int OnInit()
    Comment(NY_close, ", ", NY_open, ", day: ",TimeDayOfWeek(NY_close), ", ",TimeCurrent() );
    
    drawPivot(NY_close);
+   drawWeeklyPivot(NY_close);
    
 //---
    return(INIT_SUCCEEDED);
