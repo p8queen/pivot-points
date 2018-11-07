@@ -32,7 +32,7 @@ void drawPivot(datetime date_close){
 
 
    //Print("Pivot: ", pivot);
-   for(int i=0;i<100;i++){
+   for(int i=0;i<300;i++){
       candle_close = iBarShift(Symbol(),PERIOD_H1,date_close);
       pivot = getPivot(candle_close);
       //save pivots for weeklypivot
@@ -88,23 +88,47 @@ void drawLineOfPivot(string name, double price, datetime closeSession){
          "\n pivot-1 time: ", TimeToStr(ObjectGet("pivot-2",OBJPROP_TIME2)), 
          "\n pivot-1 day of the week: ",TimeDayOfWeek(ObjectGet("pivot-2",OBJPROP_TIME2))
          );
- 
+   datetime dtmClose;
+   int p=-1 ; //ObjectGet pivot-0, ..., pivot-n
+   bool lastFriday = false;
    double dblWeeklyPivot = 0;
-   datetime close = ObjectGet("pivot-1",OBJPROP_TIME2);
-   for(int a=1;a<=5;a++){
-      dblWeeklyPivot += ObjectGet("pivot-"+IntegerToString(a),OBJPROP_PRICE1);
-     
-      }
-      dblWeeklyPivot = dblWeeklyPivot/5;
-   Comment("weekly pivot: ",dblWeeklyPivot );
+   while(!lastFriday){
+         p++;
+         dtmClose = ObjectGet("pivot-"+IntegerToString(p),OBJPROP_TIME2);
+         if(TimeDayOfWeek(dtmClose)==5)  //friday
+            lastFriday = true;
+          }
+          dblWeeklyPivot += ObjectGet("pivot-"+IntegerToString(p),OBJPROP_PRICE1);
    
-   string name = "weeklyPivot-0";
+   while(p<300){
+         p++;
+         Comment(dblWeeklyPivot, ", ",p);
+         dtmClose = ObjectGet("pivot-"+IntegerToString(p),OBJPROP_TIME2);
+         dblWeeklyPivot += ObjectGet("pivot-"+IntegerToString(p),OBJPROP_PRICE1);
+         if(TimeDayOfWeek(dtmClose) == 1){ // is monday, draw The Line
+               dblWeeklyPivot = dblWeeklyPivot/5;
+               drawLineOfWeeklyPivot("pivotWeekly-"+IntegerToString(p),dtmClose,dblWeeklyPivot);
+               dblWeeklyPivot = 0 ;
+               }
+         }
+
+   //Comment("weekly pivot: ",dblWeeklyPivot );
+   
+   
+   
+   }
+ 
+void drawLineOfWeeklyPivot(string name ,datetime closeMonday,double dblPivotOfTheWeek){
+
    ObjectDelete(0,name);
-   ObjectCreate(0,name, OBJ_TREND, 0, close-24*4*60*60-8*60*60, dblWeeklyPivot, close, dblWeeklyPivot );
+   ObjectCreate(0,name, OBJ_TREND, 0, closeMonday-8*60*60, dblPivotOfTheWeek,closeMonday+24*4*60*60 , dblPivotOfTheWeek );
    ObjectSetInteger(0,name,OBJPROP_RAY_RIGHT,false);
    ObjectSet(name,OBJPROP_STYLE, STYLE_DASHDOT);
    ObjectSet(name,OBJPROP_COLOR,clrWhite);
    ObjectSet(name,OBJPROP_WIDTH,1);
-   
-   }
-   
+
+
+
+
+      }
+ 
