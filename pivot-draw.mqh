@@ -17,6 +17,7 @@ double weeklyPivot[30];
 void setInitialTime(){
    if(TimeCurrent()<NY_close) 
       NY_close -= 24*60*60;
+   
    if(TimeDayOfWeek(NY_close)==0)
       NY_close -= 48*60*60;
    if(TimeDayOfWeek(NY_close)==6)
