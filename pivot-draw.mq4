@@ -18,10 +18,7 @@ int OnInit()
 //---
    Print("/////////////************** INIT ***********///////////");
    setInitialTime();
-   datetime NY_open = NY_close - 8*60*60; 
-   Comment(NY_close, ", ", NY_open, ", day: ",TimeDayOfWeek(NY_close), ", ",TimeCurrent() );
-   
-   drawPivot(NY_close);
+   datetime NY_open = NY_close - 23*60*60-4*24*60*60; 
    drawWeeklyPivot(NY_close);
    
 //---
